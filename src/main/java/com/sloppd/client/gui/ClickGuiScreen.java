@@ -28,7 +28,7 @@ public class ClickGuiScreen extends Screen {
     @Override public void render(DrawContext ctx, int mx, int my, float delta) {
         ctx.fill(0, 0, width, height, 0xB8101018);
         ctx.drawTextWithShadow(textRenderer, Text.literal("sloppd client"), 15, 14, ACCENT);
-        ctx.drawTextWithShadow(textRenderer, Text.literal("v1.1.0  •  Fabric 1.21.11"), 112, 14, MUTED);
+        ctx.drawTextWithShadow(textRenderer, Text.literal("v1.2.0  •  Fabric 1.21.11"), 112, 14, MUTED);
         for (Panel p : panels) {
             List<ClientModule> mods = ModuleManager.byCategory(p.category);
             int h = HEADER + (p.collapsed ? 0 : mods.size() * ROW);
