@@ -124,7 +124,7 @@ public final class HudModules {
         public ArmorHud() { super("Armor HUD", "Shows equipped armor and remaining durability.", ModuleCategory.PLAYER); }
     }
     public static final class PotionHud extends ClientModule {
-        public PotionHud() { super("Potion HUD", "Shows active effect names and durations.", ModuleCategory.COMBAT); }
+        public PotionHud() { super("Potion HUD", "Shows active effect names and durations.", ModuleCategory.PLAYER); }
     }
     public static final class MovementHud extends ClientModule {
         public MovementHud() { super("Movement HUD", "Shows current horizontal movement speed.", ModuleCategory.MOVEMENT); }
