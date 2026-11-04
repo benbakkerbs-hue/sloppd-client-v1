@@ -6,34 +6,23 @@ import com.sloppd.client.module.ModuleManager;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldExtractionContext;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.EnderChestBlock;
-import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexRendering;
 import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShapes;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 1.21.11 renderer port.
- *
- * The newer Fabric world-render API splits frame extraction from drawing.
- * World data is read only in END_EXTRACTION. The drawing callback consumes
- * an immutable snapshot and does not query ClientWorld.
+ * Safe visual test helpers for Minecraft 1.21.11.
+ * The test marker is a fixed dummy position 10 blocks below the player.
+ * It does not inspect blocks, containers, entities, or other hidden world data.
  */
 public final class VisualModules {
     private static boolean registered;
@@ -44,7 +33,6 @@ public final class VisualModules {
     private static void registerRenderer() {
         if (registered) return;
         registered = true;
-
         WorldRenderEvents.END_EXTRACTION.register(VisualModules::extractFrame);
         WorldRenderEvents.AFTER_ENTITIES.register(VisualModules::drawFrame);
     }
@@ -54,29 +42,22 @@ public final class VisualModules {
         var world = context.world();
         var player = client.player;
 
-        if (world == null || player == null) {
+        if (world == null || player == null || !client.isInSingleplayer()) {
             frame = FrameSnapshot.EMPTY;
             return;
         }
 
-        boolean entityEsp = enabled("Entity ESP");
-        boolean storageEsp = enabled("Storage ESP");
-        boolean blockEsp = enabled("Block ESP");
-        boolean tracers = enabled("Tracers");
-        boolean chunkBorders = enabled("Chunk Borders");
-
-        if (!entityEsp && !storageEsp && !blockEsp && !tracers && !chunkBorders) {
-            frame = FrameSnapshot.EMPTY;
-            return;
-        }
-
-        Vec3d camera = context.camera().getCameraPos();
-        List<Box> entityBoxes = new ArrayList<>();
-        List<Box> storageBoxes = new ArrayList<>();
-        List<Box> oreBoxes = new ArrayList<>();
-        List<Vec3d> tracerTargets = new ArrayList<>();
+        List<Box> markerBoxes = new ArrayList<>();
         List<Box> chunkBoxes = new ArrayList<>();
-        if (chunkBorders) {
+
+        if (enabled("Test Chest Marker")) {
+            // Fixed dummy target: 10 blocks directly below the player's feet.
+            // This deliberately does not check whether a chest exists there.
+            BlockPos testPos = player.getBlockPos().down(10);
+            markerBoxes.add(new Box(testPos));
+        }
+
+        if (enabled("Chunk Borders")) {
             BlockPos playerPos = player.getBlockPos();
             int chunkX = playerPos.getX() >> 4;
             int chunkZ = playerPos.getZ() >> 4;
@@ -84,74 +65,15 @@ public final class VisualModules {
                     (chunkX + 1) * 16.0, player.getY() + 8.0, (chunkZ + 1) * 16.0));
         }
 
-        if (entityEsp || tracers) {
-            for (Entity entity : world.getEntities()) {
-                if (entity == player || !(entity instanceof LivingEntity living) || !living.isAlive()) {
-                    continue;
-                }
-                if (entityEsp) {
-                    entityBoxes.add(entity.getBoundingBox().expand(0.035));
-                }
-                if (tracers) {
-                    tracerTargets.add(entity.getEntityPos().add(0.0, entity.getHeight() * 0.5, 0.0));
-                }
-            }
-        }
-
-        if (storageEsp) {
-            BlockPos playerPos = player.getBlockPos();
-            for (var blockEntity : world.getBlockEntities()) {
-                BlockPos pos = blockEntity.getPos();
-                if (pos.getSquaredDistance(playerPos) > 48.0 * 48.0) continue;
-
-                BlockState state = world.getBlockState(pos);
-                if (state.getBlock() instanceof ChestBlock
-                        || state.getBlock() instanceof EnderChestBlock
-                        || state.getBlock() instanceof ShulkerBoxBlock) {
-                    Box box = state.getOutlineShape(world, pos).getBoundingBox().offset(pos);
-                    storageBoxes.add(box);
-                }
-            }
-        }
-
-        if (blockEsp) {
-            BlockPos center = player.getBlockPos();
-            int radius = 10;
-            for (BlockPos pos : BlockPos.iterate(
-                    center.add(-radius, -radius, -radius),
-                    center.add(radius, radius, radius))) {
-                BlockState state = world.getBlockState(pos);
-                if (state.isOf(Blocks.DIAMOND_ORE)
-                        || state.isOf(Blocks.DEEPSLATE_DIAMOND_ORE)
-                        || state.isOf(Blocks.EMERALD_ORE)
-                        || state.isOf(Blocks.DEEPSLATE_EMERALD_ORE)
-                        || state.isOf(Blocks.ANCIENT_DEBRIS)) {
-                    oreBoxes.add(new Box(pos).contract(0.01));
-                }
-            }
-        }
-
-        frame = new FrameSnapshot(
-                camera.x, camera.y, camera.z,
-                List.copyOf(entityBoxes),
-                List.copyOf(storageBoxes),
-                List.copyOf(oreBoxes),
-                List.copyOf(tracerTargets),
-                List.copyOf(chunkBoxes)
-        );
+        var camera = context.camera().getCameraPos();
+        frame = new FrameSnapshot(camera.x, camera.y, camera.z,
+                List.copyOf(markerBoxes), List.copyOf(chunkBoxes));
     }
 
     private static void drawFrame(WorldRenderContext context) {
         FrameSnapshot current = frame;
         if (current == FrameSnapshot.EMPTY) return;
-
-        boolean entityEsp = enabled("Entity ESP");
-        boolean storageEsp = enabled("Storage ESP");
-        boolean blockEsp = enabled("Block ESP");
-        boolean tracers = enabled("Tracers");
-        boolean chunkBorders = enabled("Chunk Borders");
-
-        if (!entityEsp && !storageEsp && !blockEsp && !tracers && !chunkBorders) return;
+        if (!enabled("Test Chest Marker") && !enabled("Chunk Borders")) return;
 
         MatrixStack matrices = context.matrices();
         VertexConsumerProvider consumers = context.consumers();
@@ -161,44 +83,21 @@ public final class VisualModules {
         matrices.translate(-current.cameraX, -current.cameraY, -current.cameraZ);
         VertexConsumer lines = consumers.getBuffer(RenderLayers.lines());
 
-        if (entityEsp) {
-            for (Box box : current.entityBoxes) {
-                drawBoxOutline(matrices, lines, box, 0xF2D161FF);
-            }
-        }
-
-        if (storageEsp) {
-            for (Box box : current.storageBoxes) {
+        if (enabled("Test Chest Marker")) {
+            for (Box box : current.markerBoxes) {
                 drawBoxOutline(matrices, lines, box, 0xFFFFB82E);
             }
         }
-
-        if (blockEsp) {
-            for (Box box : current.oreBoxes) {
-                drawBoxOutline(matrices, lines, box, 0xFF33F2D1);
-            }
-        }
-
-        if (chunkBorders) {
+        if (enabled("Chunk Borders")) {
             for (Box box : current.chunkBoxes) {
                 drawBoxOutline(matrices, lines, box, 0xFF55DDEE);
             }
         }
-
-        if (tracers) {
-            for (Vec3d target : current.tracerTargets) {
-                Vec3d relative = target.subtract(
-                        current.cameraX, current.cameraY, current.cameraZ);
-                drawLine(matrices, lines, Vec3d.ZERO, relative,
-                        0.78F, 0.38F, 1.0F, 0.95F);
-            }
-        }
-
         matrices.pop();
     }
 
     private static void drawBoxOutline(MatrixStack matrices, VertexConsumer lines,
-                                            Box box, int color) {
+                                       Box box, int color) {
         VertexRendering.drawOutline(matrices, lines, VoxelShapes.cuboid(box),
                 0.0, 0.0, 0.0, color, 1.0F);
     }
@@ -208,28 +107,10 @@ public final class VisualModules {
         return module != null && module.isEnabled();
     }
 
-    private static void drawLine(MatrixStack matrices, VertexConsumer consumer,
-                                 Vec3d from, Vec3d to,
-                                 float red, float green, float blue, float alpha) {
-        MatrixStack.Entry entry = matrices.peek();
-        consumer.vertex(entry.getPositionMatrix(), (float) from.x, (float) from.y, (float) from.z)
-                .color(red, green, blue, alpha)
-                .normal(entry, 0.0F, 1.0F, 0.0F);
-        consumer.vertex(entry.getPositionMatrix(), (float) to.x, (float) to.y, (float) to.z)
-                .color(red, green, blue, alpha)
-                .normal(entry, 0.0F, 1.0F, 0.0F);
-    }
-
-    private record FrameSnapshot(
-            double cameraX, double cameraY, double cameraZ,
-            List<Box> entityBoxes,
-            List<Box> storageBoxes,
-            List<Box> oreBoxes,
-            List<Vec3d> tracerTargets,
-            List<Box> chunkBoxes
-    ) {
+    private record FrameSnapshot(double cameraX, double cameraY, double cameraZ,
+                                 List<Box> markerBoxes, List<Box> chunkBoxes) {
         private static final FrameSnapshot EMPTY =
-                new FrameSnapshot(0, 0, 0, List.of(), List.of(), List.of(), List.of(), List.of());
+                new FrameSnapshot(0, 0, 0, List.of(), List.of());
     }
 
     private abstract static class VisualBase extends ClientModule {
@@ -239,27 +120,10 @@ public final class VisualModules {
         }
     }
 
-    public static final class EntityEsp extends VisualBase {
-        public EntityEsp() {
-            super("Entity ESP", "Outlines nearby living entities.");
-        }
-    }
-
-    public static final class StorageEsp extends VisualBase {
-        public StorageEsp() {
-            super("Storage ESP", "Highlights loaded chests and shulker boxes.");
-        }
-    }
-
-    public static final class BlockEsp extends VisualBase {
-        public BlockEsp() {
-            super("Block ESP", "Highlights selected ores and ancient debris nearby.");
-        }
-    }
-
-    public static final class Tracers extends VisualBase {
-        public Tracers() {
-            super("Tracers", "Draws lines from the camera to nearby living entities.");
+    public static final class TestChestMarker extends VisualBase {
+        public TestChestMarker() {
+            super("Test Chest Marker",
+                    "Singleplayer-only dummy outline 10 blocks below you; does not detect chests.");
         }
     }
 
