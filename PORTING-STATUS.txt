@@ -1,0 +1,30 @@
+Minecraft 1.21.11 port notes
+
+Updated:
+- Fabric Loom plugin to net.fabricmc.fabric-loom-remap 1.14.10
+- Minecraft 1.21.11
+- Yarn mappings 1.21.11+build.3
+- Fabric Loader 0.18.1
+- Fabric API 0.141.6+1.21.11
+- WorldRenderEvents moved to
+  net.fabricmc.fabric.api.client.rendering.v1.world
+- Replaced old single-stage renderer with END_EXTRACTION snapshots
+  and BEFORE_DEBUG_RENDER drawing.
+- Updated workflow artifact collection.
+
+Important:
+This is a source-level port based on Fabric's published 1.21.11 API
+documentation. It has not yet been compiled or launched because this
+workspace has no Gradle installation. A green Gradle build and in-game
+test are still required before calling it fully verified.
+
+
+Follow-up API review:
+- The renderer now draws in AFTER_ENTITIES, where the 1.21.11
+  WorldRenderContext exposes matrices and vertex consumers.
+- Verified against Fabric API 0.141.3+1.21.11 Javadocs and Yarn
+  1.21.11+build.3 class documentation for the relevant API shapes.
+- Dependency is set to Fabric API 0.141.6+1.21.11, which is listed
+  in the Fabric Maven repository.
+- This remains source-reviewed, not compile-tested. The exact
+  compiler result is still required before claiming full compatibility.
