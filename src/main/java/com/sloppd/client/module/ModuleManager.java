@@ -19,10 +19,7 @@ public final class ModuleManager {
         initialized = true;
         register(new SprintModule());
         register(new FullbrightModule());
-        register(new VisualModules.EntityEsp());
-        register(new VisualModules.StorageEsp());
-        register(new VisualModules.BlockEsp());
-        register(new VisualModules.Tracers());
+        register(new VisualModules.TestChestMarker());
         register(new VisualModules.ChunkBorders());
         register(new HudModules.Keystrokes());
         register(new HudModules.ArmorHud());
