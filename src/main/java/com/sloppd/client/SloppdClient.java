@@ -33,7 +33,6 @@ public class SloppdClient implements ClientModInitializer {
                 if (client.currentScreen instanceof ClickGuiScreen) client.setScreen(null);
                 else if (client.currentScreen == null) client.setScreen(new ClickGuiScreen());
             }
-            HudModules.tick(client);
             ModuleManager.tick(client);
         });
         LOGGER.info("sloppd client {} initialized", VERSION);
