@@ -1,0 +1,28 @@
+BUILD sloppd client FROM AN IPAD
+
+This project includes a GitHub Actions workflow at:
+.github/workflows/build.yml
+
+The workflow asks GitHub's cloud runners to compile the source with Java 21 and Gradle.
+It does not mean the project has already compiled successfully. The first cloud build is
+the compile check; if it fails, share the Actions build log so the source can be corrected.
+
+Steps:
+1. Sign in to GitHub in Safari and create a new repository named sloppd-client.
+2. Upload the contents of this ZIP to the repository (not the containing folder).
+3. Open the repository's Actions tab.
+4. Select "Build sloppd client".
+5. Choose "Run workflow".
+6. When it finishes, open the completed workflow run.
+7. Under Artifacts, download "sloppd-client-jars".
+8. The regular sloppd-client-1.0.0.jar is the mod. Do not install a *-sources.jar.
+
+To edit later:
+- Edit Java files in src/main/java using GitHub's web editor, or download the repo and edit
+  it in an IDE on a computer.
+- Commit/push changes to main; the workflow runs again and creates a fresh artifact.
+
+Minecraft Java Edition cannot run natively on an iPad. The JAR must be installed in a
+Minecraft Java 1.21.1 Fabric installation on a compatible computer.
+
+This is an initial source project and has not yet passed a Gradle compile or in-game test.
