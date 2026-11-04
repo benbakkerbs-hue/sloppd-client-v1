@@ -5,6 +5,7 @@ import com.sloppd.client.module.ModuleCategory;
 import com.sloppd.client.module.ModuleManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import java.util.ArrayList;
@@ -53,8 +54,9 @@ public class ClickGuiScreen extends Screen {
         super.render(ctx, mx, my, delta);
     }
 
-    @Override public boolean mouseClicked(double mx, double my, int button) {
-        if (button == 0) {
+    @Override public boolean mouseClicked(Click click, boolean doubled) {
+        double mx = click.x(), my = click.y();
+        if (click.button() == 0) {
             for (int i = panels.size() - 1; i >= 0; i--) {
                 Panel p = panels.get(i);
                 if (mx >= p.x && mx <= p.x + W && my >= p.y && my <= p.y + HEADER) {
@@ -75,18 +77,19 @@ public class ClickGuiScreen extends Screen {
                 }
             }
         }
-        return super.mouseClicked(mx, my, button);
+        return super.mouseClicked(click, doubled);
     }
 
-    @Override public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
-        if (dragging != null && button == 0) {
+    @Override public boolean mouseDragged(Click click, double dx, double dy) {
+        double mx = click.x(), my = click.y();
+        if (dragging != null && click.button() == 0) {
             dragging.x = (int)(mx - offsetX); dragging.y = (int)(my - offsetY); return true;
         }
-        return super.mouseDragged(mx, my, button, dx, dy);
+        return super.mouseDragged(click, dx, dy);
     }
-    @Override public boolean mouseReleased(double mx, double my, int button) {
-        if (button == 0) { dragging = null; return true; }
-        return super.mouseReleased(mx, my, button);
+    @Override public boolean mouseReleased(Click click) {
+        if (click.button() == 0) { dragging = null; return true; }
+        return super.mouseReleased(click);
     }
     @Override public boolean shouldPause() { return false; }
     @Override public void close() { if (client != null) client.setScreen(null); }
