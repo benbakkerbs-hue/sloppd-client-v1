@@ -63,8 +63,9 @@ public final class VisualModules {
         boolean storageEsp = enabled("Storage ESP");
         boolean blockEsp = enabled("Block ESP");
         boolean tracers = enabled("Tracers");
+        boolean chunkBorders = enabled("Chunk Borders");
 
-        if (!entityEsp && !storageEsp && !blockEsp && !tracers) {
+        if (!entityEsp && !storageEsp && !blockEsp && !tracers && !chunkBorders) {
             frame = FrameSnapshot.EMPTY;
             return;
         }
@@ -74,6 +75,14 @@ public final class VisualModules {
         List<Box> storageBoxes = new ArrayList<>();
         List<Box> oreBoxes = new ArrayList<>();
         List<Vec3d> tracerTargets = new ArrayList<>();
+        List<Box> chunkBoxes = new ArrayList<>();
+        if (chunkBorders) {
+            BlockPos playerPos = player.getBlockPos();
+            int chunkX = playerPos.getX() >> 4;
+            int chunkZ = playerPos.getZ() >> 4;
+            chunkBoxes.add(new Box(chunkX * 16.0, player.getY() - 1.0, chunkZ * 16.0,
+                    (chunkX + 1) * 16.0, player.getY() + 8.0, (chunkZ + 1) * 16.0));
+        }
 
         if (entityEsp || tracers) {
             for (Entity entity : world.getEntities()) {
@@ -127,7 +136,8 @@ public final class VisualModules {
                 List.copyOf(entityBoxes),
                 List.copyOf(storageBoxes),
                 List.copyOf(oreBoxes),
-                List.copyOf(tracerTargets)
+                List.copyOf(tracerTargets),
+                List.copyOf(chunkBoxes)
         );
     }
 
@@ -139,8 +149,9 @@ public final class VisualModules {
         boolean storageEsp = enabled("Storage ESP");
         boolean blockEsp = enabled("Block ESP");
         boolean tracers = enabled("Tracers");
+        boolean chunkBorders = enabled("Chunk Borders");
 
-        if (!entityEsp && !storageEsp && !blockEsp && !tracers) return;
+        if (!entityEsp && !storageEsp && !blockEsp && !tracers && !chunkBorders) return;
 
         MatrixStack matrices = context.matrices();
         VertexConsumerProvider consumers = context.consumers();
@@ -165,6 +176,12 @@ public final class VisualModules {
         if (blockEsp) {
             for (Box box : current.oreBoxes) {
                 drawBoxOutline(matrices, lines, box, 0xFF33F2D1);
+            }
+        }
+
+        if (chunkBorders) {
+            for (Box box : current.chunkBoxes) {
+                drawBoxOutline(matrices, lines, box, 0xFF55DDEE);
             }
         }
 
@@ -208,10 +225,11 @@ public final class VisualModules {
             List<Box> entityBoxes,
             List<Box> storageBoxes,
             List<Box> oreBoxes,
-            List<Vec3d> tracerTargets
+            List<Vec3d> tracerTargets,
+            List<Box> chunkBoxes
     ) {
         private static final FrameSnapshot EMPTY =
-                new FrameSnapshot(0, 0, 0, List.of(), List.of(), List.of(), List.of());
+                new FrameSnapshot(0, 0, 0, List.of(), List.of(), List.of(), List.of(), List.of());
     }
 
     private abstract static class VisualBase extends ClientModule {
@@ -242,6 +260,12 @@ public final class VisualModules {
     public static final class Tracers extends VisualBase {
         public Tracers() {
             super("Tracers", "Draws lines from the camera to nearby living entities.");
+        }
+    }
+
+    public static final class ChunkBorders extends VisualBase {
+        public ChunkBorders() {
+            super("Chunk Borders", "Outlines the chunk containing the player.");
         }
     }
 }
