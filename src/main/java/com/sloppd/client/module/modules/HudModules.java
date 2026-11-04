@@ -6,23 +6,12 @@ import com.sloppd.client.module.ModuleManager;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.text.Text;
-import org.lwjgl.glfw.GLFW;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
+import net.minecraft.entity.EquipmentSlot;
 
 public final class HudModules {
     private static boolean registered;
-    private static boolean leftDown;
-    private static boolean rightDown;
-    private static final Deque<Long> LEFT_CLICKS = new ArrayDeque<>();
-    private static final Deque<Long> RIGHT_CLICKS = new ArrayDeque<>();
 
     private HudModules() {}
 
@@ -31,24 +20,6 @@ public final class HudModules {
         registered = true;
         HudElementRegistry.addLast(Identifier.of("sloppdclient", "sloppd_hud"),
                 (context, tickCounter) -> render(context));
-    }
-
-    public static void tick(MinecraftClient client) {
-        if (client.getWindow() == null) return;
-        long window = client.getWindow().getHandle();
-        boolean left = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_1) == GLFW.GLFW_PRESS;
-        boolean right = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_2) == GLFW.GLFW_PRESS;
-        long now = System.currentTimeMillis();
-        if (left && !leftDown) LEFT_CLICKS.addLast(now);
-        if (right && !rightDown) RIGHT_CLICKS.addLast(now);
-        leftDown = left;
-        rightDown = right;
-        trim(LEFT_CLICKS, now);
-        trim(RIGHT_CLICKS, now);
-    }
-
-    private static void trim(Deque<Long> clicks, long now) {
-        while (!clicks.isEmpty() && now - clicks.peekFirst() > 1000L) clicks.removeFirst();
     }
 
     private static boolean enabled(String name) {
@@ -64,12 +35,6 @@ public final class HudModules {
         int y = 8;
         int white = 0xFFFFFFFF;
         int accent = 0xFFB783FF;
-        if (enabled("CPS Counter")) {
-            long now = System.currentTimeMillis();
-            trim(LEFT_CLICKS, now);
-            trim(RIGHT_CLICKS, now);
-            y = line(context, "CPS  L " + LEFT_CLICKS.size() + "  R " + RIGHT_CLICKS.size(), x, y, accent);
-        }
         if (enabled("Keystrokes")) {
             var options = client.options;
             String keys = (options.forwardKey.isPressed() ? "[W]" : " W ")
@@ -80,13 +45,14 @@ public final class HudModules {
             y = line(context, "KEYS " + keys, x, y, white);
         }
         if (enabled("Armor HUD")) {
-            int slot = 4;
-            for (var stack : client.player.getArmorItems()) {
+            EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST,
+                    EquipmentSlot.LEGS, EquipmentSlot.FEET};
+            for (EquipmentSlot slot : slots) {
+                var stack = client.player.getEquippedStack(slot);
                 String value = stack.isEmpty() ? "empty" :
                         stack.getName().getString() + " " + (stack.isDamageable()
                                 ? Math.max(0, stack.getMaxDamage() - stack.getDamage()) : "OK");
-                y = line(context, "ARMOR " + slot + ": " + value, x, y, white);
-                slot--;
+                y = line(context, "ARMOR " + slot.getName() + ": " + value, x, y, white);
             }
         }
         if (enabled("Potion HUD")) {
@@ -95,19 +61,6 @@ public final class HudModules {
                 y = line(context, "EFFECT " + name + "  " + formatTicks(effect.getDuration()), x, y, white);
             }
             if (client.player.getStatusEffects().isEmpty()) y = line(context, "EFFECTS none", x, y, white);
-        }
-        if (enabled("Target HUD")) {
-            Entity target = client.crosshairTarget instanceof EntityHitResult hit ? hit.getEntity() : null;
-            if (target instanceof LivingEntity living) {
-                y = line(context, "TARGET " + living.getDisplayName().getString()
-                        + "  " + String.format("%.1f", living.getHealth()) + " HP", x, y, accent);
-            } else {
-                y = line(context, "TARGET none", x, y, accent);
-            }
-        }
-        if (enabled("Cooldown Indicator")) {
-            int percent = Math.round(client.player.getAttackCooldownProgress(0.0F) * 100.0F);
-            y = line(context, "ATTACK COOLDOWN " + percent + "%", x, y, accent);
         }
         if (enabled("Movement HUD")) {
             double speed = client.player.getVelocity().horizontalLength() * 20.0;
@@ -164,23 +117,14 @@ public final class HudModules {
         return String.format("%d:%02d", seconds / 60, seconds % 60);
     }
 
-    public static final class CpsCounter extends ClientModule {
-        public CpsCounter() { super("CPS Counter", "Shows recent left and right clicks per second.", ModuleCategory.COMBAT); }
-    }
     public static final class Keystrokes extends ClientModule {
-        public Keystrokes() { super("Keystrokes", "Shows movement and jump key states.", ModuleCategory.COMBAT); }
+        public Keystrokes() { super("Keystrokes", "Shows movement and jump key states.", ModuleCategory.PLAYER); }
     }
     public static final class ArmorHud extends ClientModule {
         public ArmorHud() { super("Armor HUD", "Shows equipped armor and remaining durability.", ModuleCategory.COMBAT); }
     }
     public static final class PotionHud extends ClientModule {
         public PotionHud() { super("Potion HUD", "Shows active effect names and durations.", ModuleCategory.COMBAT); }
-    }
-    public static final class TargetHud extends ClientModule {
-        public TargetHud() { super("Target HUD", "Shows health of the entity under the crosshair.", ModuleCategory.COMBAT); }
-    }
-    public static final class CooldownIndicator extends ClientModule {
-        public CooldownIndicator() { super("Cooldown Indicator", "Shows the vanilla attack cooldown percentage.", ModuleCategory.COMBAT); }
     }
     public static final class MovementHud extends ClientModule {
         public MovementHud() { super("Movement HUD", "Shows current horizontal movement speed.", ModuleCategory.MOVEMENT); }
