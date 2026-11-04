@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class SloppdClient implements ClientModInitializer {
         ModuleManager.init();
         clickGuiKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.sloppdclient.clickgui", InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_RIGHT_SHIFT, "category.sloppdclient"
+            GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.create(Identifier.of("sloppdclient", "main"))
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
