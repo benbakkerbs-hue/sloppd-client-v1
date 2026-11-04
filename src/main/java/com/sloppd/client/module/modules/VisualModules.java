@@ -15,7 +15,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.VertexRendering;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -67,7 +68,7 @@ public final class VisualModules {
             return;
         }
 
-        Vec3d camera = context.camera().getPos();
+        Vec3d camera = context.camera().getCameraPos();
         List<Box> entityBoxes = new ArrayList<>();
         List<Box> storageBoxes = new ArrayList<>();
         List<Box> oreBoxes = new ArrayList<>();
@@ -82,7 +83,7 @@ public final class VisualModules {
                     entityBoxes.add(entity.getBoundingBox().expand(0.035));
                 }
                 if (tracers) {
-                    tracerTargets.add(entity.getPos().add(0.0, entity.getHeight() * 0.5, 0.0));
+                    tracerTargets.add(entity.getEntityPos().add(0.0, entity.getHeight() * 0.5, 0.0));
                 }
             }
         }
@@ -146,11 +147,11 @@ public final class VisualModules {
 
         matrices.push();
         matrices.translate(-current.cameraX, -current.cameraY, -current.cameraZ);
-        VertexConsumer lines = consumers.getBuffer(RenderLayer.getLines());
+        VertexConsumer lines = consumers.getBuffer(RenderLayers.lines());
 
         if (entityEsp) {
             for (Box box : current.entityBoxes) {
-                WorldRenderer.drawBox(matrices, lines, box,
+                VertexRendering.drawBox(matrices, lines, box,
                         0.82F, 0.38F, 1.0F, 0.95F);
             }
         }
