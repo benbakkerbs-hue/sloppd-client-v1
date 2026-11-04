@@ -121,7 +121,7 @@ public final class HudModules {
         public Keystrokes() { super("Keystrokes", "Shows movement and jump key states.", ModuleCategory.PLAYER); }
     }
     public static final class ArmorHud extends ClientModule {
-        public ArmorHud() { super("Armor HUD", "Shows equipped armor and remaining durability.", ModuleCategory.COMBAT); }
+        public ArmorHud() { super("Armor HUD", "Shows equipped armor and remaining durability.", ModuleCategory.PLAYER); }
     }
     public static final class PotionHud extends ClientModule {
         public PotionHud() { super("Potion HUD", "Shows active effect names and durations.", ModuleCategory.COMBAT); }
