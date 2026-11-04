@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "sloppdclient",
+  "version": "${version}",
+  "name": "sloppd client",
+  "description": "An independently built client-side Fabric mod.",
+  "authors": ["sloppd"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.sloppd.client.SloppdClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.1",
+    "minecraft": "1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
