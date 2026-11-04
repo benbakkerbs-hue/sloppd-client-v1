@@ -1,6 +1,4 @@
-sloppd client 1.0.2 — Minecraft Java 1.21.11 / Fabric
-
-This is an editable source project, not a precompiled JAR.
+sloppd client 1.1.0 — Minecraft Java 1.21.11 / Fabric
 
 Target setup:
 - Minecraft Java Edition 1.21.11
@@ -10,31 +8,30 @@ Target setup:
 - Yarn mappings 1.21.11+build.3
 - Fabric Loom remap plugin 1.14.10
 
-Rendering port:
-- Uses Fabric's 1.21.11 world-render events in the `rendering.v1.world`
-  package.
-- Reads world/entity/block data in END_EXTRACTION.
-- Stores immutable frame snapshots.
-- Draws those snapshots in BEFORE_DEBUG_RENDER using the new
-  WorldRenderContext matrices/consumer accessors.
+Included modules:
+- Combat information HUD: CPS counter, keystrokes, armor durability,
+  potion effects, target health, and vanilla attack cooldown percentage.
+- Movement: Sprint, Sprint HUD, and movement speed HUD.
+- Render: Fullbright, Entity ESP, Storage ESP, Block ESP, Tracers,
+  and current Chunk Borders.
+- World information: chunk coordinates, current-chunk block-entity count,
+  and Prime Sus Chunk density indicator.
+- Prime Sus Chunk is intentionally limited to singleplayer and examines
+  only the player's current loaded chunk. It reports a simple local
+  container-density heuristic; it is not a definitive detector.
 
-Build via GitHub Actions:
-1. Create a GitHub repository.
-2. Upload the CONTENTS of this folder to the repository root.
-3. Open Actions.
-4. Select "Build sloppd client 1.21.11".
-5. Choose Run workflow.
-6. When the workflow succeeds, download the
-   "sloppd-client-1.21.11" artifact.
-7. Place the mod JAR in your Fabric instance's mods folder.
-
-In game:
+Controls:
 - Right Shift opens/closes the ClickGUI.
-- The project source remains editable; rebuild after changes.
+- Click a module row to toggle it.
+- Drag category headers to move panels.
 
-Verification:
-- Source and dependency configuration have been ported for 1.21.11.
-- This environment did not run Gradle, so no successful compile or
-  in-game launch has been confirmed yet.
-- If GitHub Actions reports a compile error, share the log and the
-  failing source can be corrected.
+Build:
+- GitHub Actions workflow: "Build sloppd client 1.21.11".
+- On a successful run, download the "sloppd-client-1.21.11" artifact.
+- Extract the ZIP and place the regular mod JAR (not the sources JAR)
+  in the Fabric instance's mods folder.
+
+Notes:
+- HUD modules are informational only; no combat automation is included.
+- A successful compile confirms the code builds, not that every module
+  has been verified in a live Minecraft session.
