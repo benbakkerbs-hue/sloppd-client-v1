@@ -1,0 +1,12 @@
+Simple build route
+
+Recommended route is the included GitHub Actions workflow because this
+project ZIP does not bundle Gradle itself.
+
+If you already have Gradle 9.2.1 installed:
+  gradle build
+
+The resulting mod JAR will be in build/libs.
+
+Keep the source folder: you can edit the Java files and run the build
+again whenever you want.
