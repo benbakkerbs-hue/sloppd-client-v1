@@ -24,12 +24,9 @@ public final class ModuleManager {
         register(new VisualModules.BlockEsp());
         register(new VisualModules.Tracers());
         register(new VisualModules.ChunkBorders());
-        register(new HudModules.CpsCounter());
         register(new HudModules.Keystrokes());
         register(new HudModules.ArmorHud());
         register(new HudModules.PotionHud());
-        register(new HudModules.TargetHud());
-        register(new HudModules.CooldownIndicator());
         register(new HudModules.MovementHud());
         register(new HudModules.SprintHud());
         register(new HudModules.ChunkCoordinates());
