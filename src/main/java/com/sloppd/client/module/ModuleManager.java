@@ -3,6 +3,7 @@ package com.sloppd.client.module;
 import com.sloppd.client.module.modules.FullbrightModule;
 import com.sloppd.client.module.modules.SprintModule;
 import com.sloppd.client.module.modules.VisualModules;
+import com.sloppd.client.module.modules.HudModules;
 import net.minecraft.client.MinecraftClient;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +23,18 @@ public final class ModuleManager {
         register(new VisualModules.StorageEsp());
         register(new VisualModules.BlockEsp());
         register(new VisualModules.Tracers());
+        register(new VisualModules.ChunkBorders());
+        register(new HudModules.CpsCounter());
+        register(new HudModules.Keystrokes());
+        register(new HudModules.ArmorHud());
+        register(new HudModules.PotionHud());
+        register(new HudModules.TargetHud());
+        register(new HudModules.CooldownIndicator());
+        register(new HudModules.MovementHud());
+        register(new HudModules.SprintHud());
+        register(new HudModules.ChunkCoordinates());
+        register(new HudModules.ChunkActivity());
+        register(new HudModules.PrimeSusChunk());
     }
 
     public static void register(ClientModule module) { MODULES.add(module); }
