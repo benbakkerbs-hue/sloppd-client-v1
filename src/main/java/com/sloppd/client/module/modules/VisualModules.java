@@ -23,6 +23,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.shape.VoxelShapes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,22 +152,19 @@ public final class VisualModules {
 
         if (entityEsp) {
             for (Box box : current.entityBoxes) {
-                VertexRendering.drawBox(matrices, lines, box,
-                        0.82F, 0.38F, 1.0F, 0.95F);
+                drawBoxOutline(matrices, lines, box, 0xF2D161FF);
             }
         }
 
         if (storageEsp) {
             for (Box box : current.storageBoxes) {
-                WorldRenderer.drawBox(matrices, lines, box,
-                        1.0F, 0.72F, 0.18F, 1.0F);
+                drawBoxOutline(matrices, lines, box, 0xFFFFB82E);
             }
         }
 
         if (blockEsp) {
             for (Box box : current.oreBoxes) {
-                WorldRenderer.drawBox(matrices, lines, box,
-                        0.20F, 0.95F, 0.82F, 1.0F);
+                drawBoxOutline(matrices, lines, box, 0xFF33F2D1);
             }
         }
 
@@ -180,6 +178,12 @@ public final class VisualModules {
         }
 
         matrices.pop();
+    }
+
+    private static void drawBoxOutline(MatrixStack matrices, VertexConsumer lines,
+                                            Box box, int color) {
+        VertexRendering.drawOutline(matrices, lines, VoxelShapes.cuboid(box),
+                0.0, 0.0, 0.0, color, 1.0F);
     }
 
     private static boolean enabled(String name) {
