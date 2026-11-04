@@ -9,8 +9,7 @@ Target setup:
 - Fabric Loom remap plugin 1.14.10
 
 Included modules:
-- Combat information HUD: CPS counter, keystrokes, armor durability,
-  potion effects, target health, and vanilla attack cooldown percentage.
+- Player HUD: keystrokes, armor durability, and active potion effects.
 - Movement: Sprint, Sprint HUD, and movement speed HUD.
 - Render: Fullbright, Entity ESP, Storage ESP, Block ESP, Tracers,
   and current Chunk Borders.
